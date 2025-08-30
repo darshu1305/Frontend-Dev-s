@@ -24,7 +24,7 @@ const steps = [
 
 export default function Register() {
   const [activeStep, setActiveStep] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
   const [error, setError] = useState("");
 
   const formRef = useRef({
@@ -91,7 +91,7 @@ export default function Register() {
         }
         break;
       case 1:
-        if (!formRef.current.name.trim()) {
+        { if (!formRef.current.name.trim()) {
           setError("Name is required.");
           return;
         }
@@ -116,7 +116,7 @@ export default function Register() {
           setError("Please upload a photo.");
           return;
         }
-        break;
+        break; }
       case 4:
         if (formRef.current.skills.length === 0) {
           setError("Please enter at least one skill.");

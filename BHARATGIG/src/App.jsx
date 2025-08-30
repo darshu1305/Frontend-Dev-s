@@ -1,13 +1,17 @@
 
 import './App.css'
-import './Features/Freelancer/Register.jsx'
-import Register from './Features/Freelancer/Register.jsx'
+// import { Routes, Route } from "react-router-dom";
+// import Register from './Features/Freelancer/Register'
+// import Home from './Pages/Home'
+import RegisterO from './Features/Organisation/Register.tsx'
+
 function App() {
 
 
   return (
     <>
-      <Register></Register>
+ 
+     <RegisterO></RegisterO>
     </>
   )
 }
