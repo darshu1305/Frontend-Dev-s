@@ -4,7 +4,6 @@ interface StepperProps {
   currentStep: number;
   steps: Array<{
     label: string;
-    icon: React.ReactNode;
   }>;
 }
 
@@ -24,7 +23,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
                 {/* Step Circle */}
                 <div
                   className={`
-                    w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 border-2 relative z-10
+                    w-8 h-8 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2 relative z-10
                     ${isCompleted 
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-blue-500 text-white shadow-lg' 
                       : isCurrent 
@@ -53,7 +52,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
 
               {/* Connecting Line */}
               {!isLast && (
-                <div className="w-8 sm:w-12 md:w-16 lg:w-24 mx-2 sm:mx-3 md:mx-4 relative">
+                <div className="w-8 sm:w-10 md:w-10 lg:w-20 mx-2 sm:mx-3 md:mx-4 relative">
                   <div className="h-0.5 bg-gray-200 absolute top-4 sm:top-5 md:top-6 left-0 right-0">
                     <div 
                       className={`
