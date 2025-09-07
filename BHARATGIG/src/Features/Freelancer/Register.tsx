@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Chip, Alert, Badge } from '@mui/material';
+import { Button, Chip, Alert, Badge, TextField, Autocomplete } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ArrowBack, ArrowForward, CloudUpload, Add, Close, Edit, Info, CheckCircle, X } from '@mui/icons-material';
 import SuccessModal from './SuccessModal';
@@ -37,12 +37,42 @@ interface FormData {
     summary: string;
   } | null;
 }
+interface EducationOption {
+  id: number;
+  name: string;
+}
+const dummyInstitutes: EducationOption[] = [
+  { id: 1, name: "MIT" },
+  { id: 2, name: "Stanford University" },
+  { id: 3, name: "Harvard University" },
+  { id: 4, name: "Oxford University" },
+  { id: 5, name: "Lj Institute of Technology" },
+];
 
+const dummyDegrees: EducationOption[] = [
+  { id: 1, name: "B.Sc Computer Science" },
+  { id: 2, name: "B.Tech IT" },
+  { id: 3, name: "MBA" },
+  { id: 4, name: "MCA" },
+];
+const dummySkills = [
+  { id: 1, name: "JavaScript" },
+  { id: 2, name: "React" },
+  { id: 3, name: "Node.js" },
+  { id: 4, name: "Python" },
+  { id: 5, name: "TypeScript" },
+  { id: 6, name: "CSS" },
+];
 interface FormErrors {
   freelancerName?: string;
   email?: string;
   password?: string;
   cv?: string;
+  institute?: string;
+  degree?: string;
+  startDate?: string;
+  endDate?: string;
+  note?: string;
 }
 
 // Move CustomInput component outside to prevent re-creation on every render
@@ -129,9 +159,11 @@ export default function App() {
 
   // Email validation function
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   };
+
+
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
@@ -241,31 +273,32 @@ export default function App() {
   };
 
   const handleAddEducation = () => {
-    if (newEducation.institute.trim() && newEducation.degree.trim()) {
-      if (editingEducationIndex !== null) {
-        // Update existing education
-        setFormData(prev => ({
-          ...prev,
-          education: prev.education.map((edu, index) =>
-            index === editingEducationIndex ? { ...newEducation } : edu
-          )
-        }));
-        setEditingEducationIndex(null);
-      } else {
-        // Add new education
-        setFormData(prev => ({
-          ...prev,
-          education: [...prev.education, { ...newEducation }]
-        }));
-      }
-      setNewEducation({
-        institute: '',
-        degree: '',
-        startDate: '',
-        endDate: '',
-        note: ''
-      });
+    if (!validateStep3()) return; // stop if errors exist
+
+    if (editingEducationIndex !== null) {
+      // Update existing education
+      setFormData(prev => ({
+        ...prev,
+        education: prev.education.map((edu, index) =>
+          index === editingEducationIndex ? { ...newEducation } : edu
+        )
+      }));
+      setEditingEducationIndex(null);
+    } else {
+      // Add new education
+      setFormData(prev => ({
+        ...prev,
+        education: [...prev.education, { ...newEducation }]
+      }));
     }
+    setNewEducation({
+      institute: '',
+      degree: '',
+      startDate: '',
+      endDate: '',
+      note: ''
+    });
+    setFormErrors({});
   };
 
   const handleEditEducation = (index: number) => {
@@ -366,6 +399,21 @@ export default function App() {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+  const validateStep3 = (): boolean => {
+    const errors: FormErrors = {};
+    if (!newEducation.endDate) {
+      const start = newEducation.startDate ? new Date(newEducation.startDate) : null;
+      const end = new Date(newEducation.endDate);
+      const todayDate = new Date(today);
+
+      if (start && end <= start) {
+        errors.endDate = "End date must be later than Start date";
+      }
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const validateStep2 = (): boolean => {
     const errors: FormErrors = {};
@@ -379,44 +427,30 @@ export default function App() {
   };
 
   const handleNext = () => {
-    // Automatically save unsaved education on step 2
-    if (currentStep === 3) {
-      // Check if any field is filled
-      const hasData =
-        newEducation.institute.trim() ||
-        newEducation.degree.trim() ||
-        newEducation.startDate ||
-        newEducation.endDate ||
-        newEducation.note?.trim();
-
-      if (hasData) {
-        handleAddEducation(); // push current input to formData.education
-      }
-
-      // Optionally, validate step 2 after adding
-      if (!validateStep2()) return;
-    }
-    if (currentStep === 4) {
-      // Check if any field is filled
-      const hasData =
-        newFreelanceLink.label.trim() ||
-        newFreelanceLink.url.trim();
-
-      if (hasData) {
-        handleAddFreelanceLink(); // push current input to formData.education
-      }
-
-      // Optionally, validate step 2 after adding
-      if (!validateStep2()) return;
-    }
-
-    // Validate other steps
+    // Step 1 validation
     if (currentStep === 1 && !validateStep1()) return;
 
-    // Move to next step
-    if (currentStep < 6) {
-      setCurrentStep(prev => prev + 1);
+    // Step 3 validation + save education
+    if (currentStep === 3) {
+      if (!validateStep3()) return;
+      handleAddEducation();
     }
+
+    // Step 4: optional freelance links
+    if (currentStep === 4) {
+      const hasData = newFreelanceLink.label.trim() || newFreelanceLink.url.trim();
+      if (hasData) handleAddFreelanceLink();
+      // No validation blocking → go to next step anyway
+    }
+
+    // Step 5: optional skills
+    if (currentStep === 5) {
+      const hasSkill = newSkill.trim();
+      if (hasSkill) handleAddSkills();
+    }
+
+    // Move to next step
+    if (currentStep < 6) setCurrentStep(prev => prev + 1);
   };
 
   const handleBack = () => {
@@ -673,219 +707,158 @@ export default function App() {
             <h2 className="text-2xl text-gray-800 mb-8">Freelancer - Education</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <CustomInput
-                label="Institute"
+              {/* Institute */}
+              <Autocomplete
+                freeSolo
+                options={dummyInstitutes.map((option) => option.name)}
                 value={newEducation.institute}
-                onChange={(value) => setNewEducation(prev => ({ ...prev, institute: value }))}
-                placeholder="Enter institute name"
-              />
-              <CustomInput
-                label="Degree"
-                value={newEducation.degree}
-                onChange={(value) => setNewEducation(prev => ({ ...prev, degree: value }))}
-                placeholder="Enter degree"
+                onInputChange={(event, newInputValue) => {
+                  setNewEducation((prev) => ({ ...prev, institute: newInputValue }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Institute"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
               />
 
+              {/* Degree Autocomplete */}
+              <Autocomplete
+                freeSolo
+                options={dummyDegrees.map((option) => option.name)}
+                value={newEducation.degree}
+                onInputChange={(event, newInputValue) => {
+                  setNewEducation((prev) => ({ ...prev, degree: newInputValue }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Degree"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
+              />
+
+              {/* Start Date */}
               <CustomInput
                 label="Start"
                 value={newEducation.startDate}
+                type="date"
                 onChange={(value) => {
-                  const start = new Date(value);
-                  if (isNaN(start.getTime())) return;
+                  setNewEducation((prev) => ({ ...prev, startDate: value }));
 
-                  const current = new Date(today);
-                  let clampedStart = start;
-                  let clampedEnd = newEducation.endDate ? new Date(newEducation.endDate) : null;
-
-                  if (start > current) {
-                    clampedStart = current;
-                    <Alert
-                      severity="info"
-                      icon={<Info />}
-                      sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1d4ed8",
-                        border: "1px solid #bfdbfe",
-                        mt: 1,
-                        "& .MuiAlert-icon": { color: "#3b82f6" },
-                      }}
-                    >
-                      Start date cannot be in the future!
-                    </Alert>
-                  } else {
-                    <Alert
-                      severity="info"
-                      icon={<Info />}
-                      sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1d4ed8",
-                        border: "1px solid #bfdbfe",
-                        mt: 1,
-                        "& .MuiAlert-icon": { color: "#3b82f6" },
-                      }}
-                    >
-
-                    </Alert>
-                  }
-
-                  if (clampedEnd && clampedEnd < clampedStart) {
-                    clampedEnd = null;
-                  }
-
-                  setNewEducation((prev) => ({
-                    ...prev,
-                    startDate: clampedStart.toISOString().split("T")[0],
-                    endDate: clampedEnd ? clampedEnd.toISOString().split("T")[0] : "",
-                  }));
                 }}
                 placeholder="dd/mm/yyyy"
-                type="date"
               />
-
 
               {/* End Date */}
               <CustomInput
                 label="End"
                 value={newEducation.endDate}
+                type="date"
                 onChange={(value) => {
-                  const start = newEducation.startDate ? new Date(newEducation.startDate) : null;
+                  setNewEducation((prev) => ({ ...prev, endDate: value }));
+
+                  const start = newEducation.startDate
+                    ? new Date(newEducation.startDate)
+                    : null;
                   const end = new Date(value);
-                  if (isNaN(end.getTime())) return;
+                  const todayDate = new Date(today);
 
-                  const current = new Date(today);
-                  let clampedEnd = end;
-
-                  if (start && end < start) {
-                    clampedEnd = start;
-                    <Alert
-                      severity="info"
-                      icon={<Info />}
-                      sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1d4ed8",
-                        border: "1px solid #bfdbfe",
-                        mt: 1,
-                        "& .MuiAlert-icon": { color: "#3b82f6" },
-                      }}
-                    >
-                      End date cannot be earlier than Start date!
-                    </Alert>
-                  } else if (end > current) {
-                    clampedEnd = current;
-                    <Alert
-                      severity="info"
-                      icon={<Info />}
-                      sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1d4ed8",
-                        border: "1px solid #bfdbfe",
-                        mt: 1,
-                        "& .MuiAlert-icon": { color: "#3b82f6" },
-                      }}
-                    >
-                      End date cannot be in the future!
-                    </Alert>
-                  } else {
-                    <Alert
-                      severity="info"
-                      icon={<Info />}
-                      sx={{
-                        borderRadius: "12px",
-                        backgroundColor: "#dbeafe",
-                        color: "#1d4ed8",
-                        border: "1px solid #bfdbfe",
-                        mt: 1,
-                        "& .MuiAlert-icon": { color: "#3b82f6" },
-                      }}
-                    >
-
-                    </Alert>
+                  let error = "";
+                  if (start && end <= start) {
+                    error = "End date must be later than Start date";
                   }
 
-                  setNewEducation((prev) => ({
-                    ...prev,
-                    endDate: clampedEnd.toISOString().split("T")[0],
-                  }));
+                  setFormErrors((prev) => ({ ...prev, endDate: error }));
                 }}
+                error={formErrors.endDate}
                 placeholder="dd/mm/yyyy"
-                type="date"
               />
             </div>
 
+            {/* Note */}
             <div className="space-y-2">
               <label className="text-sm text-gray-700 block">Note</label>
               <textarea
                 value={newEducation.note}
-                onChange={(e) => setNewEducation(prev => ({ ...prev, note: e.target.value }))}
+                onChange={(e) =>
+                  setNewEducation((prev) => ({ ...prev, note: e.target.value }))
+                }
                 placeholder="Add any additional notes about your education"
                 rows={3}
                 className="w-full px-4 py-3 bg-input-background rounded-lg border-2 border-gray-200 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-                         hover:border-gray-300 transition-all duration-200 resize-none"
+                   focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                   hover:border-gray-300 transition-all duration-200 resize-none"
               />
             </div>
 
+            {/* Buttons */}
             <div className="flex gap-3">
-
               <Button
                 onClick={handleAddEducation}
                 variant="contained"
                 disabled={!newEducation.institute.trim() || !newEducation.degree.trim()}
                 sx={{
-                  borderRadius: '8px',
-                  padding: '12px 20px',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                  minWidth: 'auto',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                  borderRadius: "8px",
+                  padding: "12px 20px",
+                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                  minWidth: "auto",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
                   },
-                  '&:disabled': {
-                    background: '#e5e7eb',
-                    color: '#9ca3af'
-                  }
+                  "&:disabled": {
+                    background: "#e5e7eb",
+                    color: "#9ca3af",
+                  },
                 }}
               >
                 <Add />
-                {editingEducationIndex !== null ? 'Update Education' : 'Add Another Education'}
+                {editingEducationIndex !== null
+                  ? "Update Education"
+                  : "Add Another Education"}
               </Button>
+
               {editingEducationIndex !== null && (
                 <Button
                   onClick={handleCancelEditEducation}
                   variant="contained"
                   sx={{
-                    borderRadius: '8px',
-                    padding: '12px 20px',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    minWidth: 'auto',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                    borderRadius: "8px",
+                    padding: "12px 20px",
+                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                    minWidth: "auto",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
                     },
-                    '&:disabled': {
-                      background: '#e5e7eb',
-                      color: '#9ca3af'
-                    }
+                    "&:disabled": {
+                      background: "#e5e7eb",
+                      color: "#9ca3af",
+                    },
                   }}
                 >
                   Cancel
                 </Button>
-
               )}
             </div>
 
             {/* Education List */}
             {formData.education.length > 0 && (
               <div className="space-y-3">
-                <label className="text-sm text-gray-700 block">Education Added:</label>
+                <label className="text-sm text-gray-700 block">
+                  Education Added:
+                </label>
                 <div className="space-y-3">
-
                   {formData.education.map((edu, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative group">
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative group"
+                    >
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-
                         <button
                           onClick={() => handleEditEducation(index)}
                           className="p-1 text-gray-400 hover:text-blue-500"
@@ -902,8 +875,6 @@ export default function App() {
                         </button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                        <h3>Added Educations:</h3>
-                        <br />
                         <div>
                           <span className="text-gray-600">Institute:</span>
                           <p className="text-gray-800">{edu.institute}</p>
@@ -932,7 +903,6 @@ export default function App() {
             )}
           </div>
         );
-
       case 4:
         return (
           <div className="space-y-6 animate-fade-in">
@@ -1060,53 +1030,72 @@ export default function App() {
             <h2 className="text-2xl text-gray-800 mb-8">Freelancer - Skills</h2>
 
             <div className="space-y-4">
-              <div className="flex gap-3">
-                <input
-                  type="text"
+              {/* Input + Add Button in one row */}
+              <div className="flex gap-3 items-center">
+                {/* Autocomplete Input */}
+                <Autocomplete
+                  freeSolo
+                  options={dummySkills.map(option => option.name)}
                   value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddSkills()}
-                  placeholder="Add Skills"
-                  className="flex-1 px-4 py-3 bg-input-background rounded-lg border-2 border-gray-200 
-                           focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-                           hover:border-gray-300 transition-all duration-200"
+                  onInputChange={(event, newInputValue) => setNewSkill(newInputValue)}
+                  onKeyPress={e => e.key === "Enter" && handleAddSkills()}
+                  className="flex-1"
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      placeholder="Add Skills"
+                      variant="outlined"
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: "8px",
+                          backgroundColor: "#f9fafb",
+                          borderColor: "#d1d5db",
+                        },
+                        "& .MuiOutlinedInput-root:hover": {
+                          borderColor: "#9ca3af",
+                        },
+                        "& .MuiOutlinedInput-root.Mui-focused": {
+                          borderColor: "#3b82f6",
+                          boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.2)",
+                        },
+                      }}
+                    />
+                  )}
                 />
+
+                {/* Add Button */}
                 <Button
                   variant="contained"
                   onClick={handleAddSkills}
                   disabled={!newSkill.trim()}
                   sx={{
-                    borderRadius: '8px',
-                    padding: '12px 20px',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    minWidth: 'auto',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                    borderRadius: "8px",
+                    padding: "10px 20px",
+                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                    minWidth: "auto",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
                     },
-                    '&:disabled': {
-                      background: '#e5e7eb',
-                      color: '#9ca3af'
-                    }
+                    "&:disabled": {
+                      background: "#e5e7eb",
+                      color: "#9ca3af",
+                    },
                   }}
                 >
                   <Add />
                 </Button>
               </div>
 
+              {/* Skills Added */}
               <div className="space-y-3">
                 <label className="text-sm text-gray-700 block">Skills Added:</label>
                 <div
-                  className={`
-                    p-4 bg-gray-50 rounded-lg border border-gray-200 w-full
-                    ${formData.skills.length > 10
-                      ? 'h-[200px] overflow-y-auto'
-                      : 'min-h-[100px]'
-                    }
-                  `}
+                  className={`p-4 bg-gray-50 rounded-lg border border-gray-200 w-full ${formData.skills.length > 10 ? "h-[200px] overflow-y-auto" : "min-h-[100px]"
+                    }`}
                 >
                   {formData.skills.length > 0 ? (
                     <div className="grid grid-cols-1 gap-2 w-full">
-                      {/* Display tags in rows of 5 */}
                       {Array.from({ length: Math.ceil(formData.skills.length / 5) }, (_, rowIndex) => (
                         <div key={rowIndex} className="flex flex-wrap gap-2 justify-start">
                           {formData.skills
@@ -1120,28 +1109,26 @@ export default function App() {
                                   onDelete={() => handleRemoveSkill(tag)}
                                   deleteIcon={<Close />}
                                   sx={{
-                                    backgroundColor: '#dbeafe',
-                                    color: '#1d4ed8',
-                                    borderRadius: '6px',
-                                    height: '30px',
-                                    fontSize: '12px',
-                                    maxWidth: '120px',
-                                    animation: 'slideIn 0.3s ease-out',
-                                    '& .MuiChip-deleteIcon': {
-                                      color: '#1d4ed8',
-                                      fontSize: '16px',
-                                      '&:hover': {
-                                        color: '#1e40af'
-                                      }
+                                    backgroundColor: "#dbeafe",
+                                    color: "#1d4ed8",
+                                    borderRadius: "6px",
+                                    height: "30px",
+                                    fontSize: "12px",
+                                    maxWidth: "120px",
+                                    animation: "slideIn 0.3s ease-out",
+                                    "& .MuiChip-deleteIcon": {
+                                      color: "#1d4ed8",
+                                      fontSize: "16px",
+                                      "&:hover": { color: "#1e40af" },
                                     },
-                                    '& .MuiChip-label': {
-                                      paddingLeft: '6px',
-                                      paddingRight: '4px',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      maxWidth: '80px'
-                                    }
+                                    "& .MuiChip-label": {
+                                      paddingLeft: "6px",
+                                      paddingRight: "4px",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      maxWidth: "80px",
+                                    },
                                   }}
                                 />
                               );
@@ -1151,16 +1138,16 @@ export default function App() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-full min-h-[40px]">
-                      <p className="text-gray-500 italic">
-                        No tags added yet
-                      </p>
+                      <p className="text-gray-500 italic">No tags added yet</p>
                     </div>
                   )}
                 </div>
 
                 {formData.skills.length > 0 && (
                   <div className="text-xs text-gray-500">
-                    <span>{formData.skills.length} skill{formData.skills.length !== 1 ? 's' : ''} added</span>
+                    <span>
+                      {formData.skills.length} skill{formData.skills.length !== 1 ? "s" : ""} added
+                    </span>
                   </div>
                 )}
               </div>
@@ -1168,276 +1155,253 @@ export default function App() {
           </div>
         );
 
+
       case 6:
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-2xl text-gray-800 mb-8">Review & Verify</h2>
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <h2 className="text-2xl text-gray-800 mb-8">Review & Verify</h2>
 
-            <Alert
-              severity="info"
-              icon={<Info />}
-              sx={{
-                borderRadius: '12px',
-                backgroundColor: '#dbeafe',
-                color: '#1d4ed8',
-                border: '1px solid #bfdbfe',
-                '& .MuiAlert-icon': {
-                  color: '#3b82f6'
-                }
-              }}
-            >
-              Please review all information before submitting your registration.
-            </Alert>
+      <Alert
+        severity="info"
+        icon={<Info />}
+        sx={{
+          borderRadius: '12px',
+          backgroundColor: '#dbeafe',
+          color: '#1d4ed8',
+          border: '1px solid #bfdbfe',
+          '& .MuiAlert-icon': { color: '#3b82f6' },
+        }}
+      >
+        Please review all information before submitting your registration.
+      </Alert>
 
-            {/* Basic Information Section */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg text-gray-800">Basic Information</h3>
-                <Button
-                  variant="text"
-                  startIcon={<Edit />}
-                  onClick={() => handleEditFromReview(1)}   // 👈 use here
-                  sx={{
-                    color: '#3b82f6',
-                    textTransform: 'none',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: '#eff6ff'
-                    }
-                  }}
-                >
-                  Edit
-                </Button>
+      {/* Basic Information */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg text-gray-800">Basic Information</h3>
+          <Button
+            variant="text"
+            startIcon={<Edit />}
+            onClick={() => handleEditFromReview(1)}
+            sx={{
+              color: '#3b82f6',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { backgroundColor: '#eff6ff' },
+            }}
+          >
+            Edit
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">Freelancer Name:</p>
+            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+              {formData.freelancerName || 'Not provided'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">Email:</p>
+            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+              {formData.email || 'Not provided'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">Password:</p>
+            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+              {formData.password ? '*'.repeat(formData.password.length) : 'Not provided'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">Photo:</p>
+            {photoPreview ? (
+              <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <img src={photoPreview} alt="Photo" className="w-full h-full object-cover" />
               </div>
+            ) : (
+              <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No photo uploaded</p>
+            )}
+          </div>
+        </div>
+      </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-600">Freelancer Name:</p>
-                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-                    {formData.freelancerName || 'Not provided'}
-                  </p>
+      {/* CV Information */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg text-gray-800">CV Information</h3>
+          <Button
+            variant="text"
+            startIcon={<Edit />}
+            onClick={() => handleEditFromReview(2)}
+            sx={{
+              color: '#3b82f6',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { backgroundColor: '#eff6ff' },
+            }}
+          >
+            Edit
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">CV:</p>
+              {cvPreview ? (
+                <div className="flex items-center gap-3 animate-slide-in">
+                  <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+                    <span className="text-sm text-blue-700">{cvPreview}</span>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-600">Email:</p>
-                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-                    {formData.email || 'Not provided'}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-600">Password:</p>
-                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-                    {'*'.repeat(formData.password.length) || 'Not provided'}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-600">Photo:</p>
-                  {photoPreview ? (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                      <img
-                        src={photoPreview}
-                        alt="Photo"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">
-                      No photo uploaded
+              ) : (
+                <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No CV uploaded</p>
+              )}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">Experience:</p>
+              <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                {formData.cvSummary?.experience || 'Not provided'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">Education:</p>
+              <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                {formData.cvSummary?.education || 'Not provided'}
+              </p>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">Summary:</p>
+            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+              {formData.cvSummary?.summary || 'Not provided'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Education Section */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg text-gray-800">Education</h3>
+          <Button
+            variant="text"
+            startIcon={<Edit />}
+            onClick={() => handleEditFromReview(3)}
+            sx={{
+              color: '#3b82f6',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { backgroundColor: '#eff6ff' },
+            }}
+          >
+            Edit
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {formData.education.length > 0 ? (
+            formData.education.map((edu, index) => (
+              <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Institute:</span>
+                    <p className="text-gray-800">{edu.institute || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Degree:</span>
+                    <p className="text-gray-800">{edu.degree || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Duration:</span>
+                    <p className="text-gray-800">
+                      {edu.startDate || 'Not provided'} {edu.endDate && `- ${edu.endDate}`}
                     </p>
+                  </div>
+                  {edu.note && (
+                    <div className="md:col-span-2">
+                      <span className="text-gray-600">Note:</span>
+                      <p className="text-gray-800">{edu.note}</p>
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
+            ))
+          ) : (
+            <p className="text-gray-400 italic text-center">No education added</p>
+          )}
+        </div>
+      </div>
 
-            {/* CV Information Section */}
-            {formData.cvSummary && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg text-gray-800">CV Information</h3>
-                  <Button
-                    variant="text"
-                    startIcon={<Edit />}
-                    onClick={() => handleEditFromReview(2)}   // 👈 use here
-                    sx={{
-                      color: '#3b82f6',
-                      textTransform: 'none',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        backgroundColor: '#eff6ff'
-                      }
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </div>
+      {/* Freelance Links Section */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg text-gray-800">Freelance Links</h3>
+          <Button
+            variant="text"
+            startIcon={<Edit />}
+            onClick={() => handleEditFromReview(4)}
+            sx={{
+              color: '#3b82f6',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { backgroundColor: '#eff6ff' },
+            }}
+          >
+            Edit
+          </Button>
+        </div>
 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-600">CV:</p>
-                      {cvPreview && (
-                        <div className="flex items-center gap-3 animate-slide-in">
-                          <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
-                            <span className="text-sm text-blue-700">{cvPreview}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <br />
-                    <div>
-                      <p className="text-sm text-gray-600">Experience:</p>
-                      <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">{formData.cvSummary.experience}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Education:</p>
-                      <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">{formData.cvSummary.education}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Summary:</p>
-                    <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">{formData.cvSummary.summary}</p>
-                  </div>
-                </div>
+        <div className="space-y-3">
+          {formData.freelanceLinks.length > 0 ? (
+            formData.freelanceLinks.map((link, index) => (
+              <div
+                key={index}
+                className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100"
+                onClick={() => window.open(link.url, "_blank")}
+              >
+                <p className="text-blue-600 hover:text-blue-800 underline text-sm">
+                  {link.label || link.url}
+                </p>
               </div>
-            )}
+            ))
+          ) : (
+            <p className="text-gray-400 italic text-center">No freelance links added</p>
+          )}
+        </div>
+      </div>
 
-            {/* Education Section */}
-            {formData.education.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg text-gray-800">Education</h3>
-                  <Button
-                    variant="text"
-                    startIcon={<Edit />}
-                    onClick={() => handleEditFromReview(3)}   // 👈 use here
-                    sx={{
-                      color: '#3b82f6',
-                      textTransform: 'none',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        backgroundColor: '#eff6ff'
-                      }
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </div>
+      {/* Skills Section */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg text-gray-800">Skills</h3>
+          <Button
+            variant="text"
+            startIcon={<Edit />}
+            onClick={() => handleEditFromReview(5)}
+            sx={{
+              color: '#3b82f6',
+              textTransform: 'none',
+              borderRadius: '8px',
+              '&:hover': { backgroundColor: '#eff6ff' },
+            }}
+          >
+            Edit
+          </Button>
+        </div>
 
-                <div className="space-y-3">
-                  {formData.education.map((edu, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-gray-600">Institute:</span>
-                          <p className="text-gray-800">{edu.institute}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Degree:</span>
-                          <p className="text-gray-800">{edu.degree}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Duration:</span>
-                          <p className="text-gray-800">
-                            {edu.startDate} {edu.endDate && `- ${edu.endDate}`}
-                          </p>
-                        </div>
-                        {edu.note && (
-                          <div className="md:col-span-2">
-                            <span className="text-gray-600">Note:</span>
-                            <p className="text-gray-800">{edu.note}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Freelance Links Section */}
-            {formData.freelanceLinks.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg text-gray-800">Freelance Links</h3>
-                  <Button
-                    variant="text"
-                    startIcon={<Edit />}
-                    onClick={() => handleEditFromReview(4)}   // 👈 use here
-                    sx={{
-                      color: '#3b82f6',
-                      textTransform: 'none',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        backgroundColor: '#eff6ff'
-                      }
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  {formData.freelanceLinks.map((link, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-gray-600">Label:</span>
-                          <p className="text-gray-800">{link.label}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">URL:</span>
-                          <a
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 underline break-all"
-                          >
-                            {link.url}
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Skills Section */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg text-gray-800">Skills</h3>
-                <Button
-                  variant="text"
-                  startIcon={<Edit />}
-                  onClick={() => handleEditFromReview(5)}   // 👈 use here
-                  sx={{
-                    color: '#3b82f6',
-                    textTransform: 'none',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: '#eff6ff'
-                    }
-                  }}
-                >
-                  Edit
-                </Button>
-              </div>
-
-
-              <div className="bg-gray-50 p-4 rounded-lg min-h-[80px] flex items-center">
-                <div className="flex flex-wrap gap-2 w-full">
-                  {formData.skills.length > 0 ? (
-                    formData.skills.map((tag, index) => (
-                      <Chip
-                        key={index}
-                        label={tag}
-                        sx={{
-                          backgroundColor: '#dbeafe',
-                          color: '#1d4ed8',
-                          borderRadius: '6px'
-                        }}
-                      />
-                    ))
-                  ) : (
+        <div className="bg-gray-50 p-4 rounded-lg min-h-[80px] flex items-center">
+          <div className="flex flex-wrap gap-2 w-full">
+            {formData.skills.length > 0 ? (
+              formData.skills.map((tag, index) => (
+                <Chip
+                  key={index}
+                  label={tag}
+                  sx={{ backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '6px' }}
+                />
+              ))
+            ) : (
                     <p className="text-gray-400 italic w-full text-center">No skills added</p>
                   )}
                 </div>
@@ -1525,21 +1489,21 @@ export default function App() {
                 variant="contained"
                 onClick={handleUpdateStepData}
                 sx={{
-                borderRadius: '12px',
-                padding: '12px 24px',
-                borderColor: '#e5e7eb',
-                backgroundColor: '#f9fafb',
-                color: '#6b7280',
-                textTransform: 'none',
-                '&:hover': {
-                  borderColor: '#d1d5db',
-                  backgroundColor: '#f3f4f6'
-                },
-                '&:disabled': {
-                  opacity: 0.5,
-                  backgroundColor: '#f9fafb'
-                }
-              }}
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  borderColor: '#e5e7eb',
+                  backgroundColor: '#f9fafb',
+                  color: '#6b7280',
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: '#d1d5db',
+                    backgroundColor: '#f3f4f6'
+                  },
+                  '&:disabled': {
+                    opacity: 0.5,
+                    backgroundColor: '#f9fafb'
+                  }
+                }}
               >
                 Update Data
               </Button>

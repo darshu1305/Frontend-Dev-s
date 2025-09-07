@@ -40,31 +40,7 @@ export default function ProgressMobile({ currentStep, steps }: ProgressMobilePro
         />
       </div>
 
-      {/* Step Counter */}
-      <div className="flex justify-between mt-2">
-        {steps.map((_, index) => {
-          const stepNumber = index + 1;
-          const isCompleted = stepNumber < currentStep;
-          const isCurrent = stepNumber === currentStep;
-
-          return (
-            <div
-              key={index}
-              className={`
-                w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium
-                transition-all duration-300
-                ${isCompleted 
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md" 
-                  : isCurrent 
-                  ? "bg-white border-2 border-blue-500 text-blue-600 shadow-md" 
-                  : "bg-gray-100 border border-gray-300 text-gray-400"}
-              `}
-            >
-              {stepNumber}
-            </div>
-          );
-        })}
-      </div>
+      
     </div>
   );
 }

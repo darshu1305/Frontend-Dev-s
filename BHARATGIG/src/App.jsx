@@ -1,16 +1,15 @@
 
 import './App.css'
 // import { Routes, Route } from "react-router-dom";
-// import Register from './Features/Freelancer/Register'
 // import Home from './Pages/Home'
-import RegisterO from './Features/Freelancer/Register'
-
+//import Register from './Features/Freelancer/Register'
+import Login from './Pages/Login'
 function App() {
 
 
   return (
     
-     <RegisterO></RegisterO>
+      <Login></Login>
   )
 }
 
