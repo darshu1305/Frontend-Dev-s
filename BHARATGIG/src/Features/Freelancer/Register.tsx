@@ -4,7 +4,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { ArrowBack, ArrowForward, CloudUpload, Add, Close, Edit, Info, CheckCircle, X } from '@mui/icons-material';
 import SuccessModal from './SuccessModal';
 import Stepper from '../Organisation/Stapper'
-import { Plus } from 'lucide-react';
 import StepperWrapper from './StepperWrapper';
 
 interface Education {
@@ -1423,10 +1422,37 @@ export default function App() {
     <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+
         {/* Large Gradient Blobs */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute top-1/4 right-0 w-80 h-80 bg-gradient-to-br from-purple-400/25 to-pink-400/20 rounded-full blur-3xl animate-float-delayed"></div>
         <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-gradient-to-br from-indigo-400/20 to-blue-400/25 rounded-full blur-3xl animate-float-slow"></div>
+
+        {/* Medium Morphing Shapes */}
+        <div className="absolute top-20 right-1/4 w-32 h-32 bg-gradient-to-br from-cyan-300/30 to-blue-400/30 rounded-full blur-2xl animate-morph"></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-br from-violet-300/25 to-purple-400/30 rounded-full blur-2xl animate-morph-delayed"></div>
+
+        {/* Small Floating Particles */}
+        <div className="absolute top-32 left-20 w-3 h-3 bg-blue-400/40 rounded-full animate-particle-float"></div>
+        <div className="absolute top-48 right-32 w-2 h-2 bg-purple-400/50 rounded-full animate-particle-float-delayed"></div>
+        <div className="absolute bottom-32 left-40 w-4 h-4 bg-indigo-400/40 rounded-full animate-particle-float-slow"></div>
+
+        {/* Geometric Shapes */}
+        <div className="absolute top-20 right-20 w-6 h-6 bg-blue-500/30 rotate-45 animate-geometric-spin"></div>
+        <div className="absolute top-40 left-16 w-8 h-8 bg-purple-500/25 rounded-full animate-geometric-bounce"></div>
+        <div className="absolute bottom-40 right-40 w-5 h-5 bg-indigo-500/35 rotate-45 animate-geometric-pulse"></div>
+        <div className="absolute bottom-60 left-60 w-7 h-7 bg-cyan-500/30 rounded animate-geometric-wiggle"></div>
+
+        {/* Animated Lines */}
+        <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-300/20 to-transparent animate-line-move"></div>
+        <div className="absolute bottom-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-300/20 to-transparent animate-line-move-reverse"></div>
+
+        {/* Radial Gradients */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-indigo-200/10 via-transparent to-transparent animate-radial-pulse opacity-60"></div>
+
+        {/* Additional Floating Elements */}
+        <div className="absolute top-16 left-1/3 w-12 h-12 bg-gradient-to-br from-emerald-300/20 to-teal-400/25 rounded-xl blur-sm animate-float-gentle rotate-12"></div>
+        <div className="absolute bottom-24 right-1/3 w-16 h-16 bg-gradient-to-br from-rose-300/20 to-pink-400/25 rounded-2xl blur-sm animate-float-gentle-delayed -rotate-12"></div>
       </div>
 
       {/* Content */}

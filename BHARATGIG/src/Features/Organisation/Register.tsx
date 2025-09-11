@@ -5,6 +5,7 @@ import { ArrowBack, ArrowForward, CloudUpload, Add, Close, Edit, Info, CheckCirc
 import Stepper from './Stapper';
 import SuccessModal from './SuccessModal';
 
+
 interface FormData {
   organizationName: string;
   managerId: string;
@@ -75,7 +76,18 @@ export default function App() {
     { label: 'Tags', icon: '🏷️' },
     { label: 'Review', icon: '👁️' }
   ];
-
+  const dummySuggestions = [
+    "Frontend",
+    "Backend",
+    "Fullstack",
+    "DevOps",
+    "AI",
+    "Cloud",
+    "Blockchain",
+    "Mobile",
+    "UI/UX",
+    "Data Science",
+  ];
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -286,124 +298,159 @@ export default function App() {
         );
 
       case 2:
-        return (
-          <div className="space-y-6 animate-fade-in">
-            <h2 className="text-2xl text-gray-800 mb-8">Organization - Tags</h2>
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-2xl text-gray-800 mb-8">Organization - Tags</h2>
 
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                  placeholder="Add a tag"
-                  className="flex-1 px-4 py-3 bg-input-background rounded-lg border-2 border-gray-200 
-                           focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-                           hover:border-gray-300 transition-all duration-200"
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleAddTag}
-                  disabled={!newTag.trim()}
-                  sx={{
-                    borderRadius: '8px',
-                    padding: '12px 20px',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    minWidth: 'auto',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                    },
-                    '&:disabled': {
-                      background: '#e5e7eb',
-                      color: '#9ca3af'
-                    }
-                  }}
-                >
-                  <Add />
-                </Button>
-              </div>
+              <div className="space-y-4">
+                {/* 🔹 Input with suggestions */}
+                <div className="flex flex-col gap-2 relative">
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleAddTag()}
+                      placeholder="Add a tag"
+                      className="flex-1 px-4 py-3 bg-input-background rounded-lg border-2 border-gray-200 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                       hover:border-gray-300 transition-all duration-200"
+                    />
+                    <Button
+                      variant="contained"
+                      onClick={handleAddTag}
+                      disabled={!newTag.trim()}
+                      sx={{
+                        borderRadius: "8px",
+                        padding: "12px 20px",
+                        background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                        minWidth: "auto",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+                        },
+                        "&:disabled": {
+                          background: "#e5e7eb",
+                          color: "#9ca3af",
+                        },
+                      }}
+                    >
+                      <Add />
+                    </Button>
+                  </div>
 
-              <div className="space-y-3">
-                <label className="text-sm text-gray-700 block">Tags Added:</label>
-                <div
-                  className={`
-                    p-4 bg-gray-50 rounded-lg border border-gray-200 w-full
-                    ${formData.tags.length > 10
-                      ? 'h-[100px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'
-                      : 'min-h-[60px]'
-                    }
-                  `}
-                >
-                  {formData.tags.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-2 w-full">
-                      {/* Display tags in rows of 5 */}
-                      {Array.from({ length: Math.ceil(formData.tags.length / 5) }, (_, rowIndex) => (
-                        <div key={rowIndex} className="flex flex-wrap gap-2 justify-start">
-                          {formData.tags
-                            .slice(rowIndex * 5, (rowIndex + 1) * 5)
-                            .map((tag, tagIndex) => {
-                              const actualIndex = rowIndex * 5 + tagIndex;
-                              return (
-                                <Chip
-                                  key={actualIndex}
-                                  label={tag}
-                                  onDelete={() => handleRemoveTag(tag)}
-                                  deleteIcon={<Close />}
-                                  sx={{
-                                    backgroundColor: '#dbeafe',
-                                    color: '#1d4ed8',
-                                    borderRadius: '6px',
-                                    height: '30px',
-                                    fontSize: '12px',
-                                    maxWidth: '120px',
-                                    animation: 'slideIn 0.3s ease-out',
-                                    '& .MuiChip-deleteIcon': {
-                                      color: '#1d4ed8',
-                                      fontSize: '16px',
-                                      '&:hover': {
-                                        color: '#1e40af'
-                                      }
-                                    },
-                                    '& .MuiChip-label': {
-                                      paddingLeft: '6px',
-                                      paddingRight: '4px',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      maxWidth: '80px'
-                                    }
-                                  }}
-                                />
-                              );
-                            })}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full min-h-[40px]">
-                      <p className="text-gray-500 italic">
-                        No tags added yet
-                      </p>
-                    </div>
+                  {/* 🔹 Autocomplete dropdown */}
+                  {newTag && (
+                    <ul className="absolute top-full left-0 w-[calc(100%-48px)] bg-white border border-gray-200 rounded-lg mt-1 shadow-md z-10 max-h-40 overflow-y-auto">
+                      {dummySuggestions
+                        .filter(
+                          (s) =>
+                            s.toLowerCase().includes(newTag.toLowerCase()) &&
+                            !formData.tags.includes(s)
+                        )
+                        .map((suggestion, idx) => (
+                          <li
+                            key={idx}
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer"
+                            onClick={() => {
+                              setNewTag(suggestion);
+                              handleAddTag();
+                            }}
+                          >
+                            {suggestion}
+                          </li>
+                        ))}
+                    </ul>
                   )}
                 </div>
 
-                {/* Tags Count Info */}
-                {formData.tags.length > 0 && (
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{formData.tags.length} tag{formData.tags.length !== 1 ? 's' : ''} added</span>
-                    {formData.tags.length > 10 && (
-                      <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs">
-                        Scroll to see all tags ↓
-                      </span>
+                {/* 🔹 Tags List */}
+                <div className="space-y-3">
+                  <label className="text-sm text-gray-700 block">Tags Added:</label>
+                  <div
+                    className={`
+              p-4 bg-gray-50 rounded-lg border border-gray-200 w-full
+              ${formData.tags.length > 10
+                        ? "h-[100px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                        : "min-h-[60px]"}
+            `}
+                  >
+                    {formData.tags.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2 w-full">
+                        {Array.from(
+                          { length: Math.ceil(formData.tags.length / 5) },
+                          (_, rowIndex) => (
+                            <div
+                              key={rowIndex}
+                              className="flex flex-wrap gap-2 justify-start"
+                            >
+                              {formData.tags
+                                .slice(rowIndex * 5, (rowIndex + 1) * 5)
+                                .map((tag, tagIndex) => {
+                                  const actualIndex = rowIndex * 5 + tagIndex;
+                                  return (
+                                    <Chip
+                                      key={actualIndex}
+                                      label={tag}
+                                      onDelete={() => handleRemoveTag(tag)}
+                                      deleteIcon={<Close />}
+                                      sx={{
+                                        backgroundColor: "#dbeafe",
+                                        color: "#1d4ed8",
+                                        borderRadius: "6px",
+                                        height: "30px",
+                                        fontSize: "12px",
+                                        maxWidth: "120px",
+                                        animation: "slideIn 0.3s ease-out",
+                                        "& .MuiChip-deleteIcon": {
+                                          color: "#1d4ed8",
+                                          fontSize: "16px",
+                                          "&:hover": {
+                                            color: "#1e40af",
+                                          },
+                                        },
+                                        "& .MuiChip-label": {
+                                          paddingLeft: "6px",
+                                          paddingRight: "4px",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                          maxWidth: "80px",
+                                        },
+                                      }}
+                                    />
+                                  );
+                                })}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full min-h-[40px]">
+                        <p className="text-gray-500 italic">No tags added yet</p>
+                      </div>
                     )}
                   </div>
-                )}
+
+                  {/* Tags Count Info */}
+                  {formData.tags.length > 0 && (
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>
+                        {formData.tags.length} tag
+                        {formData.tags.length !== 1 ? "s" : ""} added
+                      </span>
+                      {formData.tags.length > 10 && (
+                        <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs">
+                          Scroll to see all tags ↓
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
+          );
+
 
       case 3:
         return (
