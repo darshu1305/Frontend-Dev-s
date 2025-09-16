@@ -58,28 +58,29 @@ const Login = () => {
   };
 
   const validateForm = () => {
-    const errors = { email: "", password: "" };
-    let isValid = true;
+  const errors = { email: "", password: "" };
+  let isValid = true;
 
-    if (!formData.email) {
-      errors.email = "Email is required";
-      isValid = false;
-    } else if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
-      errors.email = "Please enter a valid email";
-      isValid = false;
-    }
+  if (!formData.email) {
+    errors.email = "Email is required";
+    isValid = false;
+  } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
+    errors.email = "Please enter a valid email";
+    isValid = false;
+  }
 
-    if (!formData.password) {
-      errors.password = "Password is required";
-      isValid = false;
-    } else if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-      isValid = false;
-    }
+  if (!formData.password) {
+    errors.password = "Password is required";
+    isValid = false;
+  } else if (formData.password.length < 6) {
+    errors.password = "Password must be at least 6 characters";
+    isValid = false;
+  }
 
-    setFormErrors(errors);
-    return isValid;
-  };
+  setFormErrors(errors);
+  return isValid;
+};
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
