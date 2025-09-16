@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Chip, Alert } from '@mui/material';
 import { ArrowBack, ArrowForward, CloudUpload, Add, Close, Edit, Info, CheckCircle } from '@mui/icons-material';
 // import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import Stepper from './Stapper';
 import SuccessModal from './SuccessModal';
+import { featureOBJ } from '../../types/featureOBJ';
+import { gettags } from '../../Services/getFeatures';
 
 
 interface FormData {
@@ -70,23 +72,25 @@ export default function App() {
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [showUploadSuccess, setShowUploadSuccess] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [dummySuggestions, setSuggestion] = useState<featureOBJ[]>([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const tagsData = await gettags();
+        setSuggestion(tagsData);
+        console.log(tagsData);
+      } catch (error) {
+        setSuggestion([]);
+      }
+    };
+
+    fetchData();
+  }, []);
   const steps = [
     { label: 'Basic Info', icon: '📋' },
     { label: 'Tags', icon: '🏷️' },
     { label: 'Review', icon: '👁️' }
-  ];
-  const dummySuggestions = [
-    "Frontend",
-    "Backend",
-    "Fullstack",
-    "DevOps",
-    "AI",
-    "Cloud",
-    "Blockchain",
-    "Mobile",
-    "UI/UX",
-    "Data Science",
   ];
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData(prev => ({
@@ -345,19 +349,19 @@ export default function App() {
                       {dummySuggestions
                         .filter(
                           (s) =>
-                            s.toLowerCase().includes(newTag.toLowerCase()) &&
-                            !formData.tags.includes(s)
+                            s.name.toLowerCase().includes(newTag.toLowerCase()) &&
+                            !formData.tags.includes(s.id)
                         )
                         .map((suggestion, idx) => (
                           <li
                             key={idx}
                             className="px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 cursor-pointer"
                             onClick={() => {
-                              setNewTag(suggestion);
+                              setNewTag(suggestion.name);
                               handleAddTag();
                             }}
                           >
-                            {suggestion}
+                            {suggestion.name}
                           </li>
                         ))}
                     </ul>
@@ -884,3 +888,4 @@ export default function App() {
     </div>
   );
 }
+

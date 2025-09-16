@@ -5,7 +5,9 @@ import { ArrowBack, ArrowForward, CloudUpload, Add, Close, Edit, Info, CheckCirc
 import SuccessModal from './SuccessModal';
 import Stepper from '../Organisation/Stapper'
 import StepperWrapper from './StepperWrapper';
-
+import { getDegrees, getInstitutes, getSkills } from '../../Services/getFeatures';
+import { useEffect } from 'react';
+import { featureOBJ } from '../../types/featureOBJ';
 interface Education {
   institute: string;
   degree: string;
@@ -36,32 +38,9 @@ interface FormData {
     summary: string;
   } | null;
 }
-interface EducationOption {
-  id: number;
-  name: string;
-}
-const dummyInstitutes: EducationOption[] = [
-  { id: 1, name: "MIT" },
-  { id: 2, name: "Stanford University" },
-  { id: 3, name: "Harvard University" },
-  { id: 4, name: "Oxford University" },
-  { id: 5, name: "Lj Institute of Technology" },
-];
 
-const dummyDegrees: EducationOption[] = [
-  { id: 1, name: "B.Sc Computer Science" },
-  { id: 2, name: "B.Tech IT" },
-  { id: 3, name: "MBA" },
-  { id: 4, name: "MCA" },
-];
-const dummySkills = [
-  { id: 1, name: "JavaScript" },
-  { id: 2, name: "React" },
-  { id: 3, name: "Node.js" },
-  { id: 4, name: "Python" },
-  { id: 5, name: "TypeScript" },
-  { id: 6, name: "CSS" },
-];
+
+
 interface FormErrors {
   freelancerName?: string;
   email?: string;
@@ -113,6 +92,28 @@ const CustomInput = ({
 );
 
 export default function App() {
+  const [dummySkills, setDummySkills] = useState<featureOBJ[]>([]);
+  const [dummyInstitutes, setInstitutes] = useState<featureOBJ[]>([]);
+  const [dummyDegrees, setDegrees] = useState<featureOBJ[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const instData = await getInstitutes();
+        setInstitutes(instData);
+        const skills = await getSkills();
+        setDummySkills(skills.map((skill: any) => typeof skill === 'string' ? { name: skill } : skill));
+        const degData = await getDegrees();
+        setDegrees(degData);
+      } catch (error) {
+        setInstitutes([]);
+        setDegrees([]);
+        setDummySkills([]);
+      }
+    };
+
+    fetchData();
+  }, []);
   const [currentStep, setCurrentStep] = useState(1);
   const today = new Date().toISOString().split("T")[0];
   const [formData, setFormData] = useState<FormData>({
