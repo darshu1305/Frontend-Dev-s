@@ -134,6 +134,8 @@ export default function App() {
   const [showUploadSuccess, setShowUploadSuccess] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isProcessingCV, setIsProcessingCV] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [newEducation, setNewEducation] = useState<Education>({
     institute: '',
     degree: '',
@@ -562,14 +564,36 @@ export default function App() {
                 placeholder="Enter email ID"
                 type="email"
               />
-              <CustomInput
-                label="Password"
-                value={formData.password}
-                onChange={(value) => handleInputChange('password', value)}
-                error={formErrors.password}
-                placeholder="Enter password"
-                type="password"
-              />
+              {/* Password input with show checkbox */}
+              <div className="space-y-2">
+                <CustomInput
+                  label="Password"
+                  value={formData.password}
+                  onChange={(value) => handleInputChange('password', value)}
+                  error={formErrors.password}
+                  placeholder="Enter password"
+                  type={showPassword ? "text" : "password"} // toggle visibility
+                />
+
+                {/* Show password checkbox */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="showPassword"
+                    checked={showPassword}
+                    onChange={(e) => setShowPassword(e.target.checked)}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="showPassword"
+                    className="text-sm text-gray-600 cursor-pointer"
+                  >
+                    Show Password
+                  </label>
+                </div>
+              </div>
+
+
               <div className="space-y-3">
                 <label className="text-sm text-gray-700 block">Upload photo</label>
                 <div className="flex items-center gap-4">
@@ -1157,251 +1181,251 @@ export default function App() {
 
 
       case 6:
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <h2 className="text-2xl text-gray-800 mb-8">Review & Verify</h2>
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h2 className="text-2xl text-gray-800 mb-8">Review & Verify</h2>
 
-      <Alert
-        severity="info"
-        icon={<Info />}
-        sx={{
-          borderRadius: '12px',
-          backgroundColor: '#dbeafe',
-          color: '#1d4ed8',
-          border: '1px solid #bfdbfe',
-          '& .MuiAlert-icon': { color: '#3b82f6' },
-        }}
-      >
-        Please review all information before submitting your registration.
-      </Alert>
+            <Alert
+              severity="info"
+              icon={<Info />}
+              sx={{
+                borderRadius: '12px',
+                backgroundColor: '#dbeafe',
+                color: '#1d4ed8',
+                border: '1px solid #bfdbfe',
+                '& .MuiAlert-icon': { color: '#3b82f6' },
+              }}
+            >
+              Please review all information before submitting your registration.
+            </Alert>
 
-      {/* Basic Information */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg text-gray-800">Basic Information</h3>
-          <Button
-            variant="text"
-            startIcon={<Edit />}
-            onClick={() => handleEditFromReview(1)}
-            sx={{
-              color: '#3b82f6',
-              textTransform: 'none',
-              borderRadius: '8px',
-              '&:hover': { backgroundColor: '#eff6ff' },
-            }}
-          >
-            Edit
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">Freelancer Name:</p>
-            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-              {formData.freelancerName || 'Not provided'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">Email:</p>
-            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-              {formData.email || 'Not provided'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">Password:</p>
-            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-              {formData.password ? '*'.repeat(formData.password.length) : 'Not provided'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">Photo:</p>
-            {photoPreview ? (
-              <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                <img src={photoPreview} alt="Photo" className="w-full h-full object-cover" />
+            {/* Basic Information */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg text-gray-800">Basic Information</h3>
+                <Button
+                  variant="text"
+                  startIcon={<Edit />}
+                  onClick={() => handleEditFromReview(1)}
+                  sx={{
+                    color: '#3b82f6',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    '&:hover': { backgroundColor: '#eff6ff' },
+                  }}
+                >
+                  Edit
+                </Button>
               </div>
-            ) : (
-              <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No photo uploaded</p>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* CV Information */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg text-gray-800">CV Information</h3>
-          <Button
-            variant="text"
-            startIcon={<Edit />}
-            onClick={() => handleEditFromReview(2)}
-            sx={{
-              color: '#3b82f6',
-              textTransform: 'none',
-              borderRadius: '8px',
-              '&:hover': { backgroundColor: '#eff6ff' },
-            }}
-          >
-            Edit
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">CV:</p>
-              {cvPreview ? (
-                <div className="flex items-center gap-3 animate-slide-in">
-                  <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
-                    <span className="text-sm text-blue-700">{cvPreview}</span>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">Freelancer Name:</p>
+                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                    {formData.freelancerName || 'Not provided'}
+                  </p>
                 </div>
-              ) : (
-                <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No CV uploaded</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">Experience:</p>
-              <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-                {formData.cvSummary?.experience || 'Not provided'}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">Education:</p>
-              <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-                {formData.cvSummary?.education || 'Not provided'}
-              </p>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-600">Summary:</p>
-            <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
-              {formData.cvSummary?.summary || 'Not provided'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Education Section */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg text-gray-800">Education</h3>
-          <Button
-            variant="text"
-            startIcon={<Edit />}
-            onClick={() => handleEditFromReview(3)}
-            sx={{
-              color: '#3b82f6',
-              textTransform: 'none',
-              borderRadius: '8px',
-              '&:hover': { backgroundColor: '#eff6ff' },
-            }}
-          >
-            Edit
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {formData.education.length > 0 ? (
-            formData.education.map((edu, index) => (
-              <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-600">Institute:</span>
-                    <p className="text-gray-800">{edu.institute || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Degree:</span>
-                    <p className="text-gray-800">{edu.degree || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Duration:</span>
-                    <p className="text-gray-800">
-                      {edu.startDate || 'Not provided'} {edu.endDate && `- ${edu.endDate}`}
-                    </p>
-                  </div>
-                  {edu.note && (
-                    <div className="md:col-span-2">
-                      <span className="text-gray-600">Note:</span>
-                      <p className="text-gray-800">{edu.note}</p>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">Email:</p>
+                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                    {formData.email || 'Not provided'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">Password:</p>
+                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                    {formData.password ? '*'.repeat(formData.password.length) : 'Not provided'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">Photo:</p>
+                  {photoPreview ? (
+                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                      <img src={photoPreview} alt="Photo" className="w-full h-full object-cover" />
                     </div>
+                  ) : (
+                    <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No photo uploaded</p>
                   )}
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic text-center">No education added</p>
-          )}
-        </div>
-      </div>
+            </div>
 
-      {/* Freelance Links Section */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg text-gray-800">Freelance Links</h3>
-          <Button
-            variant="text"
-            startIcon={<Edit />}
-            onClick={() => handleEditFromReview(4)}
-            sx={{
-              color: '#3b82f6',
-              textTransform: 'none',
-              borderRadius: '8px',
-              '&:hover': { backgroundColor: '#eff6ff' },
-            }}
-          >
-            Edit
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {formData.freelanceLinks.length > 0 ? (
-            formData.freelanceLinks.map((link, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100"
-                onClick={() => window.open(link.url, "_blank")}
-              >
-                <p className="text-blue-600 hover:text-blue-800 underline text-sm">
-                  {link.label || link.url}
-                </p>
+            {/* CV Information */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg text-gray-800">CV Information</h3>
+                <Button
+                  variant="text"
+                  startIcon={<Edit />}
+                  onClick={() => handleEditFromReview(2)}
+                  sx={{
+                    color: '#3b82f6',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    '&:hover': { backgroundColor: '#eff6ff' },
+                  }}
+                >
+                  Edit
+                </Button>
               </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic text-center">No freelance links added</p>
-          )}
-        </div>
-      </div>
 
-      {/* Skills Section */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg text-gray-800">Skills</h3>
-          <Button
-            variant="text"
-            startIcon={<Edit />}
-            onClick={() => handleEditFromReview(5)}
-            sx={{
-              color: '#3b82f6',
-              textTransform: 'none',
-              borderRadius: '8px',
-              '&:hover': { backgroundColor: '#eff6ff' },
-            }}
-          >
-            Edit
-          </Button>
-        </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">CV:</p>
+                    {cvPreview ? (
+                      <div className="flex items-center gap-3 animate-slide-in">
+                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+                          <span className="text-sm text-blue-700">{cvPreview}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 italic bg-gray-50 px-3 py-2 rounded-lg">No CV uploaded</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">Experience:</p>
+                    <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                      {formData.cvSummary?.experience || 'Not provided'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">Education:</p>
+                    <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                      {formData.cvSummary?.education || 'Not provided'}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">Summary:</p>
+                  <p className="text-gray-800 bg-gray-50 px-3 py-2 rounded-lg">
+                    {formData.cvSummary?.summary || 'Not provided'}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg min-h-[80px] flex items-center">
-          <div className="flex flex-wrap gap-2 w-full">
-            {formData.skills.length > 0 ? (
-              formData.skills.map((tag, index) => (
-                <Chip
-                  key={index}
-                  label={tag}
-                  sx={{ backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '6px' }}
-                />
-              ))
-            ) : (
+            {/* Education Section */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg text-gray-800">Education</h3>
+                <Button
+                  variant="text"
+                  startIcon={<Edit />}
+                  onClick={() => handleEditFromReview(3)}
+                  sx={{
+                    color: '#3b82f6',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    '&:hover': { backgroundColor: '#eff6ff' },
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.education.length > 0 ? (
+                  formData.education.map((edu, index) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-600">Institute:</span>
+                          <p className="text-gray-800">{edu.institute || 'Not provided'}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Degree:</span>
+                          <p className="text-gray-800">{edu.degree || 'Not provided'}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Duration:</span>
+                          <p className="text-gray-800">
+                            {edu.startDate || 'Not provided'} {edu.endDate && `- ${edu.endDate}`}
+                          </p>
+                        </div>
+                        {edu.note && (
+                          <div className="md:col-span-2">
+                            <span className="text-gray-600">Note:</span>
+                            <p className="text-gray-800">{edu.note}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 italic text-center">No education added</p>
+                )}
+              </div>
+            </div>
+
+            {/* Freelance Links Section */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg text-gray-800">Freelance Links</h3>
+                <Button
+                  variant="text"
+                  startIcon={<Edit />}
+                  onClick={() => handleEditFromReview(4)}
+                  sx={{
+                    color: '#3b82f6',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    '&:hover': { backgroundColor: '#eff6ff' },
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.freelanceLinks.length > 0 ? (
+                  formData.freelanceLinks.map((link, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100"
+                      onClick={() => window.open(link.url, "_blank")}
+                    >
+                      <p className="text-blue-600 hover:text-blue-800 underline text-sm">
+                        {link.label || link.url}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 italic text-center">No freelance links added</p>
+                )}
+              </div>
+            </div>
+
+            {/* Skills Section */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg text-gray-800">Skills</h3>
+                <Button
+                  variant="text"
+                  startIcon={<Edit />}
+                  onClick={() => handleEditFromReview(5)}
+                  sx={{
+                    color: '#3b82f6',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    '&:hover': { backgroundColor: '#eff6ff' },
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg min-h-[80px] flex items-center">
+                <div className="flex flex-wrap gap-2 w-full">
+                  {formData.skills.length > 0 ? (
+                    formData.skills.map((tag, index) => (
+                      <Chip
+                        key={index}
+                        label={tag}
+                        sx={{ backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '6px' }}
+                      />
+                    ))
+                  ) : (
                     <p className="text-gray-400 italic w-full text-center">No skills added</p>
                   )}
                 </div>
